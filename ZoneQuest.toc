@@ -1,0 +1,10 @@
+## Title: Zone Quest
+## Interface: 120005
+## Author: Sarah Reichelt
+## Version: 1.0.0
+
+## SavedVariables: zoneQuestSettings
+## X-Category: Quests
+
+ZoneQuest.lua
+ZoneQuestInterface.lua
