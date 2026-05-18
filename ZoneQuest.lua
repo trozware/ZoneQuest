@@ -83,6 +83,8 @@ end
 function ZoneQuestCommandHandler(msg)
   if msg == "reset" then
     ZoneQuest_Reset()
+  elseif msg == "info" then
+    ZoneQuest_Report()
   else
     ZoneQuest_DisplayHelp()
   end
@@ -108,6 +110,8 @@ function ZoneQuest_DisplayHelp()
   msg = "|c0000FF00ZoneQuest " .. "|c0000FFFFattempts to track quests by zone, relevance and distance."
   ChatFrame1:AddMessage(msg)
   msg = "|c0000FF00ZoneQuest: " .. "|c0000FFFFType |cFFFFFFFF/zq reset|c0000FFFF to reset the quest list order."
+  ChatFrame1:AddMessage(msg)
+  msg = "|c0000FF00ZoneQuest: " .. "|c0000FFFFType |cFFFFFFFF/zq info|c0000FFFF for a report on your current quests."
   ChatFrame1:AddMessage(msg)
   msg = "|c0000FFFFUse Game Menu > Options > AddOns > ZoneQuest to configure the options."
   ChatFrame1:AddMessage(msg)
@@ -229,7 +233,7 @@ function ZoneQuest_WatchQuests(doReset)
   -- print("Closest Quests: " .. #questsToShow.closest)
 
   ZoneQuest_SelectedQuestID = nil
-  ZoneQuest_NewestQuestID = nil
+  -- ZoneQuest_NewestQuestID = nil
 
   local alreadyWatched = {}
   local numWatches = C_QuestLog.GetNumQuestWatches()
@@ -297,17 +301,17 @@ function ZoneQuest_WatchQuests(doReset)
   if questsToShow.newest then
     ZoneQuest_DebugPrint("Newest Quest: ID: " .. questsToShow.newest)
     addWatch(questsToShow.newest)
-    -- local top3Closest = ZoneQuest_ClosestQuestIDs(3, validQuests, {})
-    -- for _, quest in ipairs(top3Closest) do
-    --   if quest.questID == questsToShow.newest then
-    ZoneQuest_SelectedQuestID = questsToShow.newest
-  --     break
-  --   end
-  -- end
-  -- if not ZoneQuest_SelectedQuestID then
-  --   ZoneQuest_DebugPrint("Newest quest not in top 3 closest on-map quests, skipping auto-select")
-  --   -- ZoneQuest_NewestQuestID = questsToShow.newest
-  -- end
+    local top3Closest = ZoneQuest_ClosestQuestIDs(1, validQuests, {})
+    for _, quest in ipairs(top3Closest) do
+      if quest.questID == questsToShow.newest then
+        ZoneQuest_SelectedQuestID = questsToShow.newest
+        break
+      end
+    end
+    if not ZoneQuest_SelectedQuestID then
+      ZoneQuest_DebugPrint("Newest quest not in top 3 closest on-map quests, skipping auto-select")
+    -- ZoneQuest_NewestQuestID = questsToShow.newest
+    end
   end
 
   if ZoneQuest_SelectedQuestID then
@@ -514,6 +518,59 @@ function ZoneQuest_Reset()
   ZoneQuest_NewestQuestID = nil
   ZoneQuest_WatchQuests(true)
   ZoneQuest_DisplayMessage("ZoneQuest list has been reset to show closest quests.", true)
+end
+
+function ZoneQuest_Report()
+  local validQuests = ZoneQuest_GetValidQuests()
+
+  local totalOnQuest = 0
+  local metaCount = 0
+  local importantCount = 0
+  local completedCount = 0
+  local mapQuests = {}
+  local mapCompleted = 0
+
+  for _, quest in ipairs(validQuests) do
+    if quest.isOnQuest then
+      totalOnQuest = totalOnQuest + 1
+      if quest.isMeta then
+        metaCount = metaCount + 1
+      end
+      if quest.isImportant then
+        importantCount = importantCount + 1
+      end
+      if quest.isComplete then
+        completedCount = completedCount + 1
+      end
+      if quest.isOnMap then
+        table.insert(mapQuests, quest)
+        if quest.isComplete then
+          mapCompleted = mapCompleted + 1
+        end
+      end
+    end
+  end
+
+  ZoneQuest_DisplayMessage("Quest Report:", true)
+  ZoneQuest_FormatReport("Total Quests", totalOnQuest)
+  ZoneQuest_FormatReport("Meta Quests", metaCount)
+  ZoneQuest_FormatReport("Important Quests", importantCount)
+  ZoneQuest_FormatReport("Completed Quests", completedCount)
+
+  if #mapQuests == 0 then
+    ZoneQuest_FormatReport("Quests in this Map", 0)
+  else
+    -- for _, quest in ipairs(mapQuests) do
+    --   local status = quest.isComplete and " [Complete]" or ""
+    --   print("    - " .. quest.title .. status)
+    -- end
+    ZoneQuest_FormatReport("Quests in this Map", #mapQuests .. " (" .. mapCompleted .. " complete)")
+  end
+end
+
+function ZoneQuest_FormatReport(header, info)
+  local formatted_msg = "|c0000FFFF    " .. header .. ": |cFFFFFFFF" .. info
+  ChatFrame1:AddMessage(formatted_msg)
 end
 
 function ZoneQuest_DebugPrint(msg)

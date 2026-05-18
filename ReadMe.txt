@@ -1,7 +1,7 @@
 Zone Quest
-==========
+==========dis
 
-Soon to be available from [CurseForge](https://wow.curseforge.com/projects/zonequest)
+Available from [CurseForge](https://www.curseforge.com/wow/addons/zonequest)
 
 **Zone Quest** provides a way to track and manage your quests more efficiently.
 
@@ -25,6 +25,7 @@ Use **Game Menu > Options > AddOns > ZoneQuest** to configure the options.
 
 - **/zq** - shows information and usage tips for the add-on.
 - **/zq reset** - resets the order of quests in the quest log. This can be used if the order of quests looks wrong after a patch or if you have been using other add-ons that change the order of quests.
+- **/zq info** - reports your total number of quests and the number of each type.
 
 My Other WoW Add-ons
 ====================
@@ -35,4 +36,5 @@ My Other WoW Add-ons
 Version History
 ===============
 
+- v 1.0.1: Better management of new and selected quests. Use '/zq info' for a quest report.
 - v 1.0.0b: Initial release.

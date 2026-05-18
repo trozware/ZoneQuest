@@ -1,1 +1,2 @@
+- v 1.0.1: Better management of new and selected quests. Use '/zq info' for a quest report.
 - v 1.0.0: Initial release.
