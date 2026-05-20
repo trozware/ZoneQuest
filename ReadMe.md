@@ -4,7 +4,7 @@
 
 ---
 
-Soon to be available from [CurseForge](https://wow.curseforge.com/projects/zonequest).
+Available from [CurseForge](https://www.curseforge.com/wow/addons/zonequest)
 
 ## Zone Quest
 
@@ -42,5 +42,6 @@ Use **Game Menu > Options > AddOns > ZoneQuest** to configure the options.
 
 ### Version History
 
+- v 1.0.2: If you manually untrack a quest, it will stay untracked in this session, unless you do any part of it.
 - v 1.0.1: Better management of new and selected quests. Use '/zq info' for a quest report.
 - v 1.0.0: Initial release.
