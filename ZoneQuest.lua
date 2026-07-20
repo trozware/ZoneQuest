@@ -27,6 +27,7 @@ ZoneQuest_SelectedQuestID = nil
 ZoneQuest_NewestQuestID = nil
 ZoneQuest_UpdatingQuests = false
 ZoneQuest_ManuallyUntrackedQuests = {}
+ZoneQuest_ManuallyTrackedQuests = {}
 
 ZoneQuest_DebugMode = false
 
@@ -194,6 +195,11 @@ function ZoneQuest_WatchQuests(doReset)
   ZoneQuest_UpdatingQuests = true
   ZoneQuest_UntrackAllQuests()
 
+  if doReset then
+    ZoneQuest_ManuallyUntrackedQuests = {}
+    ZoneQuest_ManuallyTrackedQuests = {}
+  end
+
   local validQuests = ZoneQuest_GetValidQuests()
 
   local inInstance, instanceType = IsInInstance()
@@ -213,6 +219,7 @@ function ZoneQuest_WatchQuests(doReset)
     ZoneQuest_SelectedQuestID = nil
     ZoneQuest_NewestQuestID = nil
     ZoneQuest_ManuallyUntrackedQuests = {}
+    ZoneQuest_ManuallyTrackedQuests = {}
   else
     questsToShow.selected = ZoneQuest_SelectedQuestID
     questsToShow.newest = ZoneQuest_NewestQuestID
@@ -256,10 +263,10 @@ function ZoneQuest_WatchQuests(doReset)
       ZoneQuest_DebugPrint("No more quests to track")
       if #ZoneQuest_ManuallyUntrackedQuests > 0 then
         ZoneQuest_DebugPrint("Manually Untracked Quests: " .. #ZoneQuest_ManuallyUntrackedQuests)
-        ZoneQuest_ManuallyUntrackedQuests = {}
-        ZoneQuest_DelayedUpdate(1)
+        questsToShow.closest = ZoneQuest_GetManuallyUntrackedQuests()
+      -- ZoneQuest_ManuallyUntrackedQuests = {}
+      -- ZoneQuest_DelayedUpdate(1)
       end
-      return
     end
   end
   -- print("Closest Quests: " .. #questsToShow.closest)
@@ -405,7 +412,8 @@ function ZoneQuest_GetValidQuests()
             distanceSq = distanceSq,
             onContinent = onContinent,
             onMap = onMap,
-            hasLocalPOI = hasLocalPOI
+            hasLocalPOI = hasLocalPOI,
+            isManuallyTracked = tContains(ZoneQuest_ManuallyTrackedQuests, questID)
           }
         )
       end
@@ -475,6 +483,38 @@ function ZoneQuest_GetManuallyTrackedQuests(validQuests)
   return manuallyTracked
 end
 
+function ZoneQuest_GetManuallyUntrackedQuests()
+  local manuallyUntracked = {}
+
+  for _, questID in ipairs(ZoneQuest_ManuallyUntrackedQuests) do
+    local info = C_QuestLog.GetInfo(questID)
+    if info then
+      local distanceSq, onContinent = C_QuestLog.GetDistanceSqToQuest(questID)
+      local onMap, hasLocalPOI = C_QuestLog.IsOnMap(questID)
+      table.insert(
+        manuallyUntracked,
+        {
+          questID = questID,
+          title = info.title,
+          isOnMap = info.isOnMap,
+          questClassification = info.questClassification,
+          isOnQuest = C_QuestLog.IsOnQuest(questID),
+          isComplete = C_QuestLog.IsComplete(questID),
+          isImportant = C_QuestLog.IsImportantQuest(questID),
+          isMeta = C_QuestLog.IsMetaQuest(questID),
+          distanceSq = distanceSq,
+          onContinent = onContinent,
+          onMap = onMap,
+          hasLocalPOI = hasLocalPOI,
+          isManuallyTracked = tContains(ZoneQuest_ManuallyTrackedQuests, questID)
+        }
+      )
+    end
+  end
+
+  return manuallyUntracked
+end
+
 function ZoneQuest_ClosestQuestIDs(maxCount, validQuests, completeQuestIDs)
   local closest = {}
   local revisedMaxCount = maxCount
@@ -537,8 +577,12 @@ function ZoneQuest_AnyQuestIDs(validQuests)
     end
   )
 
+  if #closest == 0 then
+    return {}
+  end
+
   local questsToTrack = {}
-  for i = 1, 3 do
+  for i = 1, min(#closest, 3) do
     table.insert(
       questsToTrack,
       {questID = closest[i].questID, title = closest[i].title, distanceSq = closest[i].distanceSq}
@@ -599,7 +643,16 @@ function ZoneQuest_UpdateManualTracking(questID, added)
         break
       end
     end
+    if not tContains(ZoneQuest_ManuallyTrackedQuests, questID) then
+      table.insert(ZoneQuest_ManuallyTrackedQuests, questID)
+    end
   else
+    for i, id in ipairs(ZoneQuest_ManuallyTrackedQuests) do
+      if id == questID then
+        table.remove(ZoneQuest_ManuallyTrackedQuests, i)
+        break
+      end
+    end
     if not tContains(ZoneQuest_ManuallyUntrackedQuests, questID) then
       table.insert(ZoneQuest_ManuallyUntrackedQuests, questID)
     end
@@ -618,10 +671,28 @@ function ZoneQuest_RemoveQuestFromManualUntracking(questID)
   return haveRemoved
 end
 
+function ZoneQuest_RemoveQuestFromManualTracking(questID)
+  local haveRemoved = false
+  for i, id in ipairs(ZoneQuest_ManuallyTrackedQuests) do
+    if id == questID then
+      table.remove(ZoneQuest_ManuallyTrackedQuests, i)
+      haveRemoved = true
+      break
+    end
+  end
+  return haveRemoved
+end
+
 function ZoneQuest_RemoveMissingQuestsFromManualTracking(allQuestIDs)
   for i = #ZoneQuest_ManuallyUntrackedQuests, 1, -1 do
     if not allQuestIDs[ZoneQuest_ManuallyUntrackedQuests[i]] then
       table.remove(ZoneQuest_ManuallyUntrackedQuests, i)
+    end
+  end
+
+  for i = #ZoneQuest_ManuallyTrackedQuests, 1, -1 do
+    if not allQuestIDs[ZoneQuest_ManuallyTrackedQuests[i]] then
+      table.remove(ZoneQuest_ManuallyTrackedQuests, i)
     end
   end
 end
@@ -630,9 +701,10 @@ function ZoneQuest_Reset()
   ZoneQuest_SelectedQuestID = nil
   ZoneQuest_NewestQuestID = nil
   ZoneQuest_ManuallyUntrackedQuests = {}
+  ZoneQuest_ManuallyTrackedQuests = {}
 
   ZoneQuest_WatchQuests(true)
-  ZoneQuest_DisplayMessage("ZoneQuest list has been reset to show closest quests.", true)
+  ZoneQuest_DisplayMessage("The ZoneQuest quest tracking has been reset.", true)
 end
 
 function ZoneQuest_Report()

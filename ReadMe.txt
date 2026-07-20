@@ -36,6 +36,7 @@ My Other WoW Add-ons
 Version History
 ===============
 
+- v 1.0.3: If you manually track a quest, it will stay tracked in this session, unless you complete it.
 - v 1.0.2: If you manually untrack a quest, it will stay untracked in this session, unless you do any part of it.
 - v 1.0.1: Better management of new and selected quests. Use '/zq info' for a quest report.
 - v 1.0.0b: Initial release.

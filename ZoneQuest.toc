@@ -1,7 +1,7 @@
 ## Title: Zone Quest
 ## Interface: 120005
 ## Author: Sarah Reichelt
-## Version: 1.0.2
+## Version: 1.0.3
 
 ## SavedVariables: zoneQuestSettings
 ## X-Category: Quests
