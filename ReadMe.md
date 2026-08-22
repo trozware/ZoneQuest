@@ -25,6 +25,8 @@ Use **Game Menu > Options > AddOns > ZoneQuest** to configure the options.
 - **Always Show Important Quests** - this will keep all important quests in the track list, even if they are on a different map.
 - **Max Tracked Quests** - this limits the number of quests that will be tracked at once. If there are more quests available than the limit, the closest ones will be tracked.
 
+Manually tracked and untracked quests will stay tracked or untracked for the current session, unless you complete or do any part of them.
+
 ### Slash Commands
 
 - **/zq** - shows information and usage tips for the add-on.
@@ -42,6 +44,7 @@ Use **Game Menu > Options > AddOns > ZoneQuest** to configure the options.
 
 ### Version History
 
+- v 1.0.4: Updated for 12.1.0.
 - v 1.0.3: If you manually track a quest, it will stay tracked in this session, unless you complete it.
 - v 1.0.2: If you manually untrack a quest, it will stay untracked in this session, unless you do any part of it.
 - v 1.0.1: Better management of new and selected quests. Use '/zq info' for a quest report.
